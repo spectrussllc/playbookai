@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    PLAYBOOKAI PRO — Complete Platform (Fixed)
@@ -92,6 +92,44 @@ function SopBody({text}){
         if(/^(Phase \d|Step \d|Day \d|Pre-|Post-)/.test(line.trim())&&line.length<80)return<h3 key={i}>{line}</h3>;
         return<span key={i}>{line}{"\n"}</span>;
       })}
+    </div>
+  );
+}
+
+/* ── WELCOME MODAL ── */
+function WelcomeModal({user, onDone}){
+  const firstName=(user?.user_metadata?.full_name||"friend").split(" ")[0];
+  const [industry,setIndustry]=useState("");
+  const [locCount,setLocCount]=useState("");
+  const canContinue=industry&&locCount;
+  return(
+    <div className="welcome-overlay">
+      <div className="welcome-card">
+        <div className="welcome-emoji">🚀</div>
+        <div className="welcome-headline">Hey, <span>{firstName}!</span><br/>Your playbook awaits.</div>
+        <div className="welcome-sub">You just made the best decision for your ops team — and they don't even know it yet. Let's get you set up in 60 seconds so you can build your first SOP before this tab closes.</div>
+        <div className="welcome-group">
+          <div className="welcome-q">What kind of business do you run?</div>
+          <select className="form-select" value={industry} onChange={e=>setIndustry(e.target.value)}>
+            <option value="">Pick your industry...</option>
+            {INDUSTRIES.map(i=><option key={i}>{i}</option>)}
+          </select>
+        </div>
+        <div className="welcome-group">
+          <div className="welcome-q">How many locations are you running?</div>
+          <div style={{display:"flex",gap:"0.5rem",flexWrap:"wrap"}}>
+            {["Just 1","2–5","6–10","10+"].map(o=>(
+              <div key={o} onClick={()=>setLocCount(o)} style={{flex:1,minWidth:80,padding:"0.55rem",border:"1px solid",borderColor:locCount===o?"var(--amber)":"var(--border)",background:locCount===o?"var(--amberbg)":"transparent",color:locCount===o?"var(--amber)":"var(--mid)",cursor:"pointer",textAlign:"center",fontFamily:"'Barlow Condensed'",fontWeight:700,fontSize:"0.85rem",textTransform:"uppercase",letterSpacing:"0.05em",transition:"all 0.13s"}}>{o}</div>
+            ))}
+          </div>
+        </div>
+        <button className="btn btn-primary" style={{width:"100%",justifyContent:"center",padding:"0.9rem",fontSize:"1rem",marginTop:"0.5rem"}} disabled={!canContinue} onClick={()=>onDone({industry,locCount})}>
+          Build My First SOP →
+        </button>
+        <div className="welcome-skip" onClick={()=>onDone({industry:"",locCount:""})}>
+          Skip for now — I'll figure it out
+        </div>
+      </div>
     </div>
   );
 }
@@ -467,12 +505,54 @@ body{font-family:'Barlow',sans-serif;background:var(--steel);color:var(--white);
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-track{background:transparent;}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+/* TRIAL BANNER */
+.trial-banner{background:rgba(196,74,42,0.1);border-bottom:1px solid rgba(196,74,42,0.25);padding:0.38rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;flex-shrink:0;}
+.trial-banner.urgent{background:rgba(196,74,42,0.18);border-bottom-color:rgba(196,74,42,0.5);}
+.trial-banner-text{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:#e87060;}
+.trial-banner-cta{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.07em;color:var(--amber);cursor:pointer;border:1px solid rgba(232,160,32,0.3);padding:0.18rem 0.6rem;transition:all 0.13s;}
+.trial-banner-cta:hover{background:var(--amberbg);}
+/* DEMO BANNER */
+.demo-banner{background:rgba(232,160,32,0.06);border:1px solid rgba(232,160,32,0.18);border-left:3px solid var(--amber);padding:0.65rem 1rem;margin-bottom:1.2rem;display:flex;align-items:center;justify-content:space-between;gap:0.5rem;}
+.demo-banner-text{font-size:0.78rem;color:var(--amber);font-family:'IBM Plex Mono',monospace;}
+/* ONBOARDING CHECKLIST */
+.checklist{background:var(--steel2);border:1px solid var(--border);padding:1.3rem;margin-bottom:1.5rem;position:relative;}
+.checklist-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.8rem;}
+.checklist-title{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:0.9rem;text-transform:uppercase;letter-spacing:0.07em;}
+.checklist-prog-label{font-size:0.7rem;color:var(--dim);font-family:'IBM Plex Mono',monospace;}
+.checklist-bar{height:3px;background:var(--border);margin-bottom:1.1rem;}
+.checklist-bar-fill{height:100%;background:var(--green);transition:width 0.5s;}
+.checklist-item{display:flex;align-items:center;gap:0.75rem;padding:0.55rem 0;border-bottom:1px solid var(--border2);cursor:pointer;transition:background 0.12s;}
+.checklist-item:last-child{border-bottom:none;}
+.checklist-check{width:20px;height:20px;border:2px solid var(--border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.65rem;flex-shrink:0;transition:all 0.2s;}
+.checklist-item.done .checklist-check{background:var(--green);border-color:var(--green);color:#fff;}
+.checklist-item-content{flex:1;}
+.checklist-item-label{font-size:0.84rem;font-weight:500;color:var(--white);transition:color 0.2s;}
+.checklist-item.done .checklist-item-label{color:var(--dim);text-decoration:line-through;}
+.checklist-item-sub{font-size:0.7rem;color:var(--dim);margin-top:0.05rem;}
+.checklist-item-arrow{font-size:0.65rem;color:var(--dim);flex-shrink:0;}
+.checklist-footer{font-size:0.75rem;color:var(--amber);font-family:'IBM Plex Mono',monospace;margin-top:0.8rem;padding-top:0.6rem;border-top:1px solid var(--border);}
+/* WELCOME MODAL */
+.welcome-overlay{position:fixed;inset:0;background:rgba(9,9,8,0.92);z-index:300;display:flex;align-items:center;justify-content:center;padding:1.5rem;}
+.welcome-card{background:var(--steel2);border:1px solid var(--border);width:100%;max-width:500px;padding:2.5rem;}
+.welcome-emoji{font-size:2.5rem;margin-bottom:0.7rem;}
+.welcome-headline{font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:2rem;text-transform:uppercase;line-height:1.1;margin-bottom:0.6rem;}
+.welcome-headline span{color:var(--amber);}
+.welcome-sub{font-size:0.86rem;color:var(--mid);line-height:1.7;margin-bottom:1.8rem;}
+.welcome-group{margin-bottom:1.2rem;}
+.welcome-q{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:var(--mid);margin-bottom:0.5rem;}
+.welcome-skip{margin-top:1rem;text-align:center;font-size:0.74rem;color:var(--dim);cursor:pointer;text-decoration:underline;}
+.welcome-skip:hover{color:var(--mid);}
+/* SIGN OUT */
+.signout-btn{margin:0.5rem 0.7rem 0.8rem;padding:0.4rem 0.7rem;background:transparent;border:1px solid var(--border);color:var(--dim);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;cursor:pointer;width:calc(100% - 1.4rem);text-align:left;transition:all 0.13s;display:flex;align-items:center;gap:0.4rem;}
+.signout-btn:hover{border-color:var(--rust);color:var(--rust);}
+/* EMPTY STATE ACTIONS */
+.empty-actions{display:flex;gap:0.5rem;margin-top:0.8rem;flex-wrap:wrap;justify-content:center;}
 `;
 
 /* ══════════════════════════════════════════════════════════════
    MAIN APP COMPONENT
 ══════════════════════════════════════════════════════════════ */
-export default function PlaybookAIPro() {
+export default function PlaybookAIPro({ user = null, onSignOut }) {
   const [view,setView]         = useState("dashboard");
   const [sops,setSops]         = useState([]);
   const [locations,setLocations] = useState([]);
@@ -494,7 +574,16 @@ export default function PlaybookAIPro() {
   const [genRespId,setGenRespId] = useState(null);
   const [expandedEmail,setExpandedEmail] = useState(null);
   const [filterSop,setFilterSop] = useState("all");
+  const [showWelcome,setShowWelcome] = useState(false);
+  const [demoMode,setDemoMode] = useState(false);
+  const [checklistDismissed,setChecklistDismissed] = useState(false);
   const outRef = useRef(null);
+
+  const trialDaysLeft = useMemo(()=>{
+    if(!user?.created_at) return 14;
+    const daysPassed=Math.floor((Date.now()-new Date(user.created_at))/86400000);
+    return Math.max(0,14-daysPassed);
+  },[user]);
 
   useEffect(()=>{
     const check=()=>{const m=window.innerWidth<=768;setIsMobile(m);setSidebarOpen(!m);};
@@ -503,8 +592,9 @@ export default function PlaybookAIPro() {
 
   useEffect(()=>{
     (async()=>{
-      const s=await dbGet("pba4-sops"),l=await dbGet("pba4-locs"),st=await dbGet("pba4-staff"),r=await dbGet("pba4-revs"),al=await dbGet("pba4-alerts"),as=await dbGet("pba4-aset");
-      setSops(s||SEED_SOPS);setLocations(l||SEED_LOCS);setStaff(st||SEED_STAFF);setReviews(r||genReviews());setAlerts(al||SEED_ALERTS);if(as)setAlertSettings(as);
+      const s=await dbGet("pba4-sops"),l=await dbGet("pba4-locs"),st=await dbGet("pba4-staff"),r=await dbGet("pba4-revs"),al=await dbGet("pba4-alerts"),as=await dbGet("pba4-aset"),w=await dbGet("pba4-welcomed");
+      setSops(s||[]);setLocations(l||[]);setStaff(st||{});setReviews(r||[]);setAlerts(al||[]);if(as)setAlertSettings(as);
+      if(!w)setShowWelcome(true);
       setLoaded(true);
     })();
   },[]);
@@ -532,6 +622,22 @@ export default function PlaybookAIPro() {
 
   const navigate=useCallback(v=>{setView(v);if(isMobile)setSidebarOpen(false);},[isMobile]);
   const openSop=useCallback(sop=>{setActiveSopId(sop.id);setView("sopDetail");if(isMobile)setSidebarOpen(false);},[isMobile]);
+
+  async function handleWelcomeDone({industry,locCount}){
+    await dbSet("pba4-welcomed",true);
+    setShowWelcome(false);
+    if(industry){setGenForm(f=>({...f,industry}));navigate("generator");showToast("Welcome! Let's build your first SOP ⚡");}
+    else{showToast("Welcome aboard! Start whenever you're ready.");}
+  }
+
+  function loadDemoData(){
+    setSops(SEED_SOPS);setLocations(SEED_LOCS);setStaff(SEED_STAFF);setReviews(genReviews());setAlerts(SEED_ALERTS);
+    setDemoMode(true);navigate("dashboard");showToast("Sample data loaded — poke around!");
+  }
+  function clearDemoData(){
+    setSops([]);setLocations([]);setStaff({});setReviews([]);setAlerts([]);
+    setDemoMode(false);showToast("Demo cleared. Fresh start!");
+  }
 
   const liveSop=sops.find(s=>s.id===activeSopId)||null;
   const negUnresp=reviews.filter(r=>r.rating<=2&&!r.responded&&!r.aiResponse).length;
@@ -625,7 +731,9 @@ Rules: 4-5 stars: thank warmly, mention something specific, invite back. 1-2 sta
           ))}
           <div className="sb-div"/>
           <div className="sb-sec">Recent SOPs</div>
+
           <div className="sb-scroll">
+            {sops.length===0&&<div style={{padding:"0.8rem 0.65rem",fontSize:"0.72rem",color:"var(--dim)",fontFamily:"'IBM Plex Mono'",lineHeight:1.5}}>Your SOPs will appear here once you generate them.</div>}
             {[...sops].sort((a,b)=>new Date(b.created)-new Date(a.created)).slice(0,8).map(s=>(
               <div key={s.id} className={"sb-mini"+(liveSop?.id===s.id&&view==="sopDetail"?" active":"")} onClick={()=>openSop(s)}>
                 <div className="sb-mini-t">{s.title}</div>
@@ -633,6 +741,7 @@ Rules: 4-5 stars: thank warmly, mention something specific, invite back. 1-2 sta
               </div>
             ))}
           </div>
+          {onSignOut&&<button className="signout-btn" onClick={onSignOut}>⎋ Sign Out</button>}
         </div>
 
         <div className="main">
@@ -651,6 +760,11 @@ Rules: 4-5 stars: thank warmly, mention something specific, invite back. 1-2 sta
             </div>
           </div>
 
+          {trialDaysLeft<=7&&<div className={"trial-banner"+(trialDaysLeft<=3?" urgent":"")}>
+            <span className="trial-banner-text">⏳ {trialDaysLeft===0?"Your trial ended today":`${trialDaysLeft} day${trialDaysLeft!==1?"s":""} left in your free trial`}</span>
+            <span className="trial-banner-cta">Upgrade Now →</span>
+          </div>}
+
           <div className="content" style={view==="generator"?{overflow:"hidden",padding:"1rem",height:"100%",display:"flex",flexDirection:"column"}:{}}>
 
             {/* DASHBOARD */}
@@ -660,8 +774,42 @@ Rules: 4-5 stars: thank warmly, mention something specific, invite back. 1-2 sta
               const ar=avgRat(reviews.map(r=>r.rating));
               const recent=[...sops].sort((a,b)=>new Date(b.created)-new Date(a.created)).slice(0,5);
               const recentRevs=[...reviews].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,3);
+              const steps=[
+                {label:"Create your account",sub:"You showed up. Respect. ✓",done:true,action:null},
+                {label:"Add your first location",sub:"Where do your people work?",done:locations.length>0,action:()=>navigate("locations")},
+                {label:"Add your staff",sub:"Put some names on the board.",done:Object.values(staff).flat().length>0,action:()=>navigate("locations")},
+                {label:"Generate your first SOP",sub:"90 seconds. We actually timed it.",done:sops.length>0,action:()=>navigate("generator")},
+                {label:"Publish a SOP to your team",sub:"Make it official. They're ready.",done:sops.some(s=>s.status==="active"),action:()=>sops.length>0?openSop([...sops].sort((a,b)=>new Date(b.created)-new Date(a.created))[0]):navigate("generator")},
+              ];
+              const doneCount=steps.filter(s=>s.done).length;
+              const allDone=doneCount===steps.length;
+              const motivational=doneCount===0?"Let's get this thing started 👇":doneCount===1?"One down. Four to go. You've got this.":doneCount===2?"Look at you go! Halfway there.":doneCount===3?"Three down! The finish line is close.":doneCount===4?"One more step and your ops machine is ready.":"🏆 You're fully set up. Go run your business.";
               return(
                 <div>
+                  {demoMode&&<div className="demo-banner"><span className="demo-banner-text">👀 Demo mode — this is sample data, not yours.</span><button className="btn btn-ghost btn-sm" onClick={clearDemoData}>Clear Demo Data</button></div>}
+                  {!checklistDismissed&&!allDone&&(
+                    <div className="checklist">
+                      <div className="checklist-header">
+                        <div className="checklist-title">Quick Start</div>
+                        <div style={{display:"flex",alignItems:"center",gap:"0.8rem"}}>
+                          <span className="checklist-prog-label">{doneCount}/{steps.length} done</span>
+                          <button className="btn btn-ghost btn-sm" onClick={()=>setChecklistDismissed(true)}>Dismiss</button>
+                        </div>
+                      </div>
+                      <div className="checklist-bar"><div className="checklist-bar-fill" style={{width:(doneCount/steps.length*100)+"%"}}/></div>
+                      {steps.map((s,i)=>(
+                        <div key={i} className={"checklist-item"+(s.done?" done":"")} onClick={()=>!s.done&&s.action&&s.action()}>
+                          <div className="checklist-check">{s.done?"✓":""}</div>
+                          <div className="checklist-item-content">
+                            <div className="checklist-item-label">{s.label}</div>
+                            <div className="checklist-item-sub">{s.sub}</div>
+                          </div>
+                          {!s.done&&s.action&&<div className="checklist-item-arrow">→</div>}
+                        </div>
+                      ))}
+                      <div className="checklist-footer">{motivational}</div>
+                    </div>
+                  )}
                   <div className="stat-grid">
                     <div className="stat-card"><div className="stat-num">{sops.length}</div><div className="stat-label">Total SOPs</div><div className="stat-sub">{activeSOPs} published</div></div>
                     <div className="stat-card"><div className="stat-num">{locations.filter(l=>l.active).length}</div><div className="stat-label">Locations</div><div className="stat-sub">{Object.values(staff).flat().length} staff</div></div>
@@ -701,7 +849,15 @@ Rules: 4-5 stars: thank warmly, mention something specific, invite back. 1-2 sta
 
             {/* LIBRARY */}
             {view==="library"&&(sops.length===0?(
-              <div className="empty"><div className="empty-icon">📋</div><div className="empty-title">No SOPs Yet</div><div className="empty-sub">Generate your first SOP.</div><button className="btn btn-primary" style={{marginTop:"0.5rem"}} onClick={()=>navigate("generator")}>Generate</button></div>
+              <div className="empty">
+                <div className="empty-icon">📋</div>
+                <div className="empty-title">Your Playbook Is Empty</div>
+                <div className="empty-sub">But not for long. Hit Generate and build your first SOP in 90 seconds flat.</div>
+                <div className="empty-actions">
+                  <button className="btn btn-primary" onClick={()=>navigate("generator")}>⚡ Generate First SOP</button>
+                  <button className="btn btn-ghost" onClick={loadDemoData}>Load Sample Data</button>
+                </div>
+              </div>
             ):(
               <table className="tbl"><thead><tr><th>Title</th><th>Role</th><th>Status</th><th>Ack</th><th>Ver</th><th>Created</th></tr></thead>
               <tbody>{sops.map(s=><tr key={s.id} onClick={()=>openSop(s)}><td><div className="tbl-name">{s.title}</div><div className="tbl-sub">{s.industry}</div></td><td className="tbl-sub">{s.role}</td><td><span className={"badge badge-"+s.status}>{s.status}</span></td><td><div className="prog"><div className="prog-bar"><div className="prog-fill" style={{width:getSopAckRate(s)+"%",background:getSopAckRate(s)===100?"var(--green)":"var(--amber)"}}/></div><span className="prog-lbl">{getSopAckRate(s)}%</span></div></td><td className="tbl-mono">v{s.version||1}</td><td className="tbl-mono">{fmtDate(s.created)}</td></tr>)}
@@ -718,7 +874,7 @@ Rules: 4-5 stars: thank warmly, mention something specific, invite back. 1-2 sta
                     <div className="form-group"><label className="form-label">Title *</label><input className="form-input" placeholder="e.g. Closing Shift Checklist" value={genForm.title} onChange={e=>setGenForm(f=>({...f,title:e.target.value}))}/></div>
                     <div className="form-group"><label className="form-label">Industry *</label><select className="form-select" value={genForm.industry} onChange={e=>setGenForm(f=>({...f,industry:e.target.value}))}><option value="">Select...</option>{INDUSTRIES.map(i=><option key={i}>{i}</option>)}</select></div>
                     <div className="form-group"><label className="form-label">Role *</label><select className="form-select" value={genForm.role} onChange={e=>setGenForm(f=>({...f,role:e.target.value}))}><option value="">Select...</option>{ROLES.map(r=><option key={r}>{r}</option>)}</select></div>
-                    <div className="form-group"><label className="form-label">Locations *</label><div className="chips">{locations.map(l=><div key={l.id} className={"chip"+(genForm.locations.includes(l.id)?" selected":"")} onClick={()=>setGenForm(f=>({...f,locations:f.locations.includes(l.id)?f.locations.filter(x=>x!==l.id):[...f.locations,l.id]}))}>{l.name}</div>)}</div></div>
+                    <div className="form-group"><label className="form-label">Locations *</label>{locations.length===0?<div style={{fontSize:"0.75rem",color:"var(--amber)",fontFamily:"'IBM Plex Mono'",padding:"0.5rem",background:"var(--amberbg)",border:"1px solid rgba(232,160,32,0.2)"}}>No locations yet — <span style={{cursor:"pointer",textDecoration:"underline"}} onClick={()=>navigate("locations")}>add one first</span> so you can assign this SOP.</div>:<div className="chips">{locations.map(l=><div key={l.id} className={"chip"+(genForm.locations.includes(l.id)?" selected":"")} onClick={()=>setGenForm(f=>({...f,locations:f.locations.includes(l.id)?f.locations.filter(x=>x!==l.id):[...f.locations,l.id]}))}>{l.name}</div>)}</div>}</div>
                     <div className="form-group"><label className="form-label">Tone</label><select className="form-select" value={genForm.tone} onChange={e=>setGenForm(f=>({...f,tone:e.target.value}))}>{TONES.map(t=><option key={t}>{t}</option>)}</select></div>
                     <div className="form-group"><label className="form-label">Context</label><textarea className="form-textarea" placeholder="Specific details, equipment..." value={genForm.context} onChange={e=>setGenForm(f=>({...f,context:e.target.value}))}/></div>
                     <button className="btn btn-primary" style={{width:"100%",justifyContent:"center",padding:"0.7rem",fontSize:"0.9rem"}} onClick={generateSOP} disabled={generating||!canGen}>
@@ -802,6 +958,7 @@ Rules: 4-5 stars: thank warmly, mention something specific, invite back. 1-2 sta
             {/* LOCATIONS */}
             {view==="locations"&&(()=>(
               <div>
+                {locations.length===0&&<div className="insight" style={{marginBottom:"1.2rem"}}><div className="insight-lbl">📍 No Locations Yet</div><div className="insight-txt">Add your first location below — give it a name, address, manager, and staff. Once it's in, you can assign SOPs to it and track acknowledgments per location. Or <span style={{color:"var(--amber)",cursor:"pointer",textDecoration:"underline"}} onClick={loadDemoData}>load sample data</span> to see what a full account looks like.</div></div>}
                 <div className="loc-grid">
                   {locations.map(loc=>{
                     const ls=staff[loc.id]||[];const rate=getLocAckRate(loc.id);
@@ -939,6 +1096,7 @@ Rules: 4-5 stars: thank warmly, mention something specific, invite back. 1-2 sta
         {modal?.type==="share"&&<ShareModal sop={modal.data} getLocName={getLocName} onExportPDF={exportPDF} onClose={()=>setModal(null)} showToast={showToast}/>}
 
         {toast&&<div className={"toast"+(toast.type==="warn"?" warn":toast.type==="err"?" err":"")}>{toast.msg}</div>}
+        {showWelcome&&<WelcomeModal user={user} onDone={handleWelcomeDone}/>}
       </div>
     </>
   );
