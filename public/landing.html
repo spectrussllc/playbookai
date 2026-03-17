@@ -952,7 +952,7 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo">Playbook<span>AI</span></div>
-  <a href="#trial" class="nav-cta">Start Free Trial</a>
+  <a href="/?mode=signup" class="nav-cta">Start Free Trial</a>
 </nav>
 
 <!-- HERO -->
@@ -963,7 +963,7 @@
     <h1>Your Locations Should Run The Same <em>Without You.</em></h1>
     <p class="hero-sub">PlaybookAI generates complete, role-specific Standard Operating Procedures in minutes — so your managers finally know what good looks like, whether you're there or not.</p>
     <div class="hero-cta-group">
-      <a href="#trial" class="btn-primary">Start Free 14-Day Trial</a>
+      <a href="/?mode=signup" class="btn-primary">Start Free 14-Day Trial</a>
       <span class="hero-note">No credit card required</span>
     </div>
   </div>
@@ -1164,7 +1164,7 @@
           <li><span class="feat-x">—</span> Custom Branding</li>
           <li><span class="feat-x">—</span> Onboarding Call</li>
         </ul>
-        <a href="#" class="tier-cta cta-outline">Start Free Trial</a>
+        <a href="/?mode=signup" class="tier-cta cta-outline">Start Free Trial</a>
       </div>
       <div class="pricing-tier featured">
         <div class="tier-badge">Most Popular</div>
@@ -1180,7 +1180,7 @@
           <li><span class="feat-check">✓</span> Custom Branding</li>
           <li><span class="feat-check">✓</span> Onboarding Call</li>
         </ul>
-        <a href="#" class="tier-cta cta-fill">Start Free Trial</a>
+        <a href="/?mode=signup" class="tier-cta cta-fill">Start Free Trial</a>
       </div>
       <div class="pricing-tier">
         <div class="tier-name">Enterprise</div>
@@ -1195,7 +1195,7 @@
           <li><span class="feat-check">✓</span> Priority Support</li>
           <li><span class="feat-check">✓</span> SLA Guarantee</li>
         </ul>
-        <a href="#" class="tier-cta cta-outline">Talk to Sales</a>
+        <a href="mailto:sam@spectruss.com" class="tier-cta cta-outline">Talk to Sales</a>
       </div>
     </div>
   </div>
@@ -1207,7 +1207,7 @@
     <div class="risk-badge">Zero Risk Guarantee</div>
     <h2>14 Days Free.<br>No Card. No Catch.</h2>
     <p>Try PlaybookAI for 14 days at no cost. Build your first 10 SOPs. Assign them to your locations. If it doesn't immediately change how your teams operate — you don't owe us a single dollar.</p>
-    <a href="#trial" class="btn-primary" style="font-size:1.2rem; padding:1.1rem 3rem;">Start Building Free</a>
+    <a href="/?mode=signup" class="btn-primary" style="font-size:1.2rem; padding:1.1rem 3rem;">Start Building Free</a>
   </div>
 </section>
 
@@ -1250,13 +1250,6 @@
 
   reveals.forEach(el => observer.observe(el));
 
-  // Smooth scroll CTAs
-  document.querySelectorAll('a[href="#trial"]').forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      document.querySelector('#trial').scrollIntoView({ behavior: 'smooth' });
-    });
-  });
 </script>
 </body>
 </html>
