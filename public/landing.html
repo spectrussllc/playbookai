@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlaybookAI — Your Locations Should Run the Same Without You</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0f0e0c;
+    --paper: #f5f0e8;
+    --steel: #2a2d35;
+    --amber: #e8a020;
+    --amber-dark: #c4841a;
+    --rust: #c44a2a;
+    --mist: #e8e2d6;
+    --mid: #8a8478;
+    --white: #fdfaf4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Barlow', sans-serif;
+    font-weight: 400;
+    overflow-x: hidden;
+  }
+
+  /* ── NOISE TEXTURE OVERLAY ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 100;
+    padding: 1.2rem 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--ink);
+    border-bottom: 3px solid var(--amber);
+  }
+
+  .nav-logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.6rem;
+    color: var(--white);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .nav-logo span { color: var(--amber); }
+
+  .nav-cta {
+    background: var(--amber);
+    color: var(--ink);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.65rem 1.8rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-block;
+  }
+
+  .nav-cta:hover {
+    background: var(--amber-dark);
+    transform: translateY(-1px);
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    background: var(--ink);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    padding: 8rem 3rem 5rem;
+    gap: 4rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    right: -10%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(232,160,32,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .hero-rule {
+    width: 60px;
+    height: 4px;
+    background: var(--amber);
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--amber);
+    margin-bottom: 1rem;
+  }
+
+  .hero h1 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(3rem, 5vw, 5.5rem);
+    line-height: 0.95;
+    text-transform: uppercase;
+    color: var(--white);
+    margin-bottom: 2rem;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    color: var(--amber);
+    display: block;
+  }
+
+  .hero-sub {
+    font-size: 1.15rem;
+    line-height: 1.65;
+    color: #a09890;
+    max-width: 480px;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero-cta-group {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .btn-primary {
+    background: var(--amber);
+    color: var(--ink);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 1rem 2.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-block;
+    position: relative;
+  }
+
+  .btn-primary::after {
+    content: '→';
+    margin-left: 0.6rem;
+    transition: transform 0.15s;
+    display: inline-block;
+  }
+
+  .btn-primary:hover {
+    background: var(--amber-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(232,160,32,0.3);
+  }
+
+  .btn-primary:hover::after { transform: translateX(4px); }
+
+  .hero-note {
+    font-size: 0.85rem;
+    color: #6a6460;
+    font-weight: 500;
+  }
+
+  /* ── HERO VISUAL ── */
+  .hero-visual {
+    position: relative;
+  }
+
+  .dashboard-mock {
+    background: #1a1d24;
+    border: 1px solid #2e3240;
+    padding: 0;
+    font-family: 'Barlow', sans-serif;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+    animation: floatUp 0.8s ease-out both;
+    animation-delay: 0.3s;
+  }
+
+  @keyframes floatUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .mock-bar {
+    background: #0f1117;
+    padding: 0.9rem 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid #2e3240;
+  }
+
+  .mock-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .mock-dot:nth-child(1) { background: #c44a2a; }
+  .mock-dot:nth-child(2) { background: #e8a020; }
+  .mock-dot:nth-child(3) { background: #4a9a6a; }
+
+  .mock-title {
+    font-size: 0.75rem;
+    color: #4a5060;
+    margin-left: 0.8rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.05em;
+  }
+
+  .mock-body {
+    padding: 1.5rem;
+  }
+
+  .mock-generating {
+    background: rgba(232,160,32,0.08);
+    border: 1px solid rgba(232,160,32,0.2);
+    border-left: 3px solid var(--amber);
+    padding: 1rem 1.2rem;
+    margin-bottom: 1rem;
+  }
+
+  .mock-gen-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--amber);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .mock-gen-text {
+    font-size: 0.85rem;
+    color: #8a9090;
+    line-height: 1.5;
+  }
+
+  .mock-sop-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .mock-sop-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background: #1e2230;
+    border: 1px solid #2e3240;
+    transition: border-color 0.2s;
+  }
+
+  .mock-sop-item:hover { border-color: var(--amber); }
+
+  .mock-sop-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .mock-sop-icon {
+    width: 28px; height: 28px;
+    background: rgba(232,160,32,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+  }
+
+  .mock-sop-name {
+    font-size: 0.8rem;
+    color: #c8c0b8;
+    font-weight: 500;
+  }
+
+  .mock-sop-loc {
+    font-size: 0.68rem;
+    color: #5a5850;
+    margin-top: 0.15rem;
+  }
+
+  .mock-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.6rem;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  .badge-done { background: rgba(74,154,106,0.15); color: #4a9a6a; }
+  .badge-new { background: rgba(232,160,32,0.15); color: var(--amber); }
+  .badge-pending { background: rgba(90,88,80,0.3); color: #7a7870; }
+
+  .mock-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+    margin-top: 1rem;
+  }
+
+  .mock-stat {
+    background: #0f1117;
+    padding: 0.8rem;
+    text-align: center;
+  }
+
+  .mock-stat-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.5rem;
+    color: var(--amber);
+    line-height: 1;
+  }
+
+  .mock-stat-label {
+    font-size: 0.65rem;
+    color: #5a5850;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-top: 0.3rem;
+  }
+
+  /* ── TRUST BAR ── */
+  .trust-bar {
+    background: var(--mist);
+    padding: 1.5rem 3rem;
+    border-bottom: 2px solid #d8d0c0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+  }
+
+  .trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--mid);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  .trust-icon { font-size: 1.1rem; }
+
+  /* ── SECTION BASE ── */
+  section { padding: 6rem 3rem; }
+
+  .container { max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.25em;
+    color: var(--amber);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .section-label::before {
+    content: '';
+    display: inline-block;
+    width: 30px;
+    height: 2px;
+    background: var(--amber);
+  }
+
+  /* ── PAIN SECTION ── */
+  .pain {
+    background: var(--white);
+    border-top: 4px solid var(--ink);
+    border-bottom: 4px solid var(--ink);
+  }
+
+  .pain h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    text-transform: uppercase;
+    line-height: 1;
+    max-width: 700px;
+    margin-bottom: 1.5rem;
+  }
+
+  .pain h2 em {
+    font-style: normal;
+    color: var(--rust);
+  }
+
+  .pain-lead {
+    font-size: 1.2rem;
+    color: #5a5450;
+    max-width: 600px;
+    line-height: 1.7;
+    margin-bottom: 3.5rem;
+  }
+
+  .pain-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 2px solid var(--ink);
+  }
+
+  .pain-card {
+    padding: 2.5rem 2rem;
+    border-right: 2px solid var(--ink);
+    position: relative;
+  }
+
+  .pain-card:last-child { border-right: none; }
+
+  .pain-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 5rem;
+    line-height: 1;
+    color: var(--mist);
+    position: absolute;
+    top: 1rem;
+    right: 1.5rem;
+    user-select: none;
+  }
+
+  .pain-card h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .pain-card p {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #6a6460;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how {
+    background: var(--ink);
+    color: var(--white);
+  }
+
+  .how .section-label { color: var(--amber); }
+
+  .how h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 4vw, 3.8rem);
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 4rem;
+    color: var(--white);
+  }
+
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 1px solid #2e3240;
+  }
+
+  .step {
+    padding: 3rem 2.5rem;
+    border-right: 1px solid #2e3240;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s;
+  }
+
+  .step:last-child { border-right: none; }
+  .step:hover { background: #1a1d24; }
+
+  .step-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 6rem;
+    line-height: 1;
+    color: rgba(232,160,32,0.1);
+    position: absolute;
+    top: 0.5rem;
+    right: 1rem;
+    transition: color 0.2s;
+  }
+
+  .step:hover .step-num { color: rgba(232,160,32,0.18); }
+
+  .step-icon {
+    font-size: 2rem;
+    margin-bottom: 1.2rem;
+    display: block;
+  }
+
+  .step h3 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 0.8rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .step p {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    color: #8a8478;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── SOCIAL PROOF ── */
+  .proof {
+    background: var(--paper);
+  }
+
+  .proof h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+    text-transform: uppercase;
+    margin-bottom: 3rem;
+  }
+
+  .testimonials {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5px;
+    background: var(--ink);
+    border: 2px solid var(--ink);
+    margin-bottom: 4rem;
+  }
+
+  .testimonial {
+    background: var(--white);
+    padding: 2.5rem;
+    position: relative;
+  }
+
+  .testimonial::before {
+    content: '"';
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 5rem;
+    line-height: 1;
+    color: var(--mist);
+    position: absolute;
+    top: 1rem;
+    left: 1.5rem;
+  }
+
+  .testimonial-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #4a4440;
+    margin-bottom: 1.5rem;
+    padding-top: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .testimonial-author {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .author-avatar {
+    width: 42px; height: 42px;
+    background: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--amber);
+    flex-shrink: 0;
+  }
+
+  .author-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--ink);
+  }
+
+  .author-title {
+    font-size: 0.78rem;
+    color: var(--mid);
+    margin-top: 0.1rem;
+  }
+
+  /* ── PRICING ── */
+  .pricing {
+    background: var(--mist);
+    border-top: 4px solid var(--ink);
+    border-bottom: 4px solid var(--ink);
+  }
+
+  .pricing h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .pricing-sub {
+    color: #7a7470;
+    font-size: 1rem;
+    margin-bottom: 3.5rem;
+  }
+
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+    border: 2px solid var(--ink);
+  }
+
+  .pricing-tier {
+    padding: 3rem 2rem;
+    background: var(--white);
+    border-right: 2px solid var(--ink);
+    position: relative;
+  }
+
+  .pricing-tier:last-child { border-right: none; }
+
+  .pricing-tier.featured {
+    background: var(--ink);
+    color: var(--white);
+  }
+
+  .tier-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    background: var(--amber);
+    color: var(--ink);
+    padding: 0.3rem 0.8rem;
+    display: inline-block;
+    margin-bottom: 1rem;
+  }
+
+  .tier-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.8rem;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .pricing-tier.featured .tier-name { color: var(--white); }
+
+  .tier-price {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 3.5rem;
+    line-height: 1;
+    color: var(--amber);
+    margin-bottom: 0.3rem;
+  }
+
+  .tier-price sup {
+    font-size: 1.5rem;
+    vertical-align: top;
+    padding-top: 0.5rem;
+  }
+
+  .tier-period {
+    font-size: 0.85rem;
+    color: var(--mid);
+    margin-bottom: 2rem;
+  }
+
+  .pricing-tier.featured .tier-period { color: #6a6a6a; }
+
+  .tier-features {
+    list-style: none;
+    margin-bottom: 2rem;
+  }
+
+  .tier-features li {
+    padding: 0.6rem 0;
+    border-bottom: 1px solid;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .pricing-tier:not(.featured) .tier-features li { border-color: var(--mist); color: #5a5450; }
+  .pricing-tier.featured .tier-features li { border-color: #2e3240; color: #a09890; }
+
+  .feat-check { color: #4a9a6a; font-weight: 700; }
+  .feat-x { color: #6a6460; }
+
+  .tier-cta {
+    display: block;
+    text-align: center;
+    padding: 0.9rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 800;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+    transition: all 0.15s;
+    cursor: pointer;
+    border: none;
+    width: 100%;
+  }
+
+  .cta-outline {
+    background: transparent;
+    border: 2px solid var(--ink);
+    color: var(--ink);
+  }
+
+  .cta-outline:hover { background: var(--ink); color: var(--white); }
+
+  .cta-fill {
+    background: var(--amber);
+    color: var(--ink);
+  }
+
+  .cta-fill:hover { background: var(--amber-dark); transform: translateY(-1px); }
+
+  /* ── RISK ── */
+  .risk {
+    background: var(--ink);
+    color: var(--white);
+    text-align: center;
+  }
+
+  .risk-inner {
+    max-width: 700px;
+    margin: 0 auto;
+  }
+
+  .risk-badge {
+    display: inline-block;
+    border: 2px solid var(--amber);
+    padding: 0.5rem 1.5rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--amber);
+    margin-bottom: 2rem;
+  }
+
+  .risk h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2.5rem, 4vw, 4rem);
+    text-transform: uppercase;
+    line-height: 1;
+    margin-bottom: 1.5rem;
+  }
+
+  .risk p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #8a8478;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ── LEAD MAGNET ── */
+  .magnet {
+    background: var(--amber);
+    padding: 5rem 3rem;
+  }
+
+  .magnet-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+
+  .magnet h2 {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: clamp(2rem, 3.5vw, 3.2rem);
+    text-transform: uppercase;
+    line-height: 1.05;
+    color: var(--ink);
+    margin-bottom: 1rem;
+  }
+
+  .magnet p {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: rgba(15,14,12,0.7);
+    margin-bottom: 0.5rem;
+  }
+
+  .magnet-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+  }
+
+  .magnet-form input {
+    padding: 1rem 1.2rem;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.95rem;
+    border: 2px solid var(--ink);
+    background: var(--white);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .magnet-form input::placeholder { color: #9a9088; }
+  .magnet-form input:focus { border-color: var(--steel); }
+
+  .magnet-form button {
+    padding: 1rem;
+    background: var(--ink);
+    color: var(--amber);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .magnet-form button:hover {
+    background: var(--steel);
+    transform: translateY(-1px);
+  }
+
+  .magnet-disclaimer {
+    font-size: 0.78rem;
+    color: rgba(15,14,12,0.5);
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #0a0908;
+    color: #5a5450;
+    padding: 3rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 3px solid var(--amber);
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .footer-logo {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 1.4rem;
+    color: var(--white);
+    text-transform: uppercase;
+  }
+
+  .footer-logo span { color: var(--amber); }
+
+  footer p { font-size: 0.8rem; }
+
+  /* ── ANIMATIONS ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding: 7rem 1.5rem 4rem; gap: 3rem; }
+    nav { padding: 1rem 1.5rem; }
+    .pain-grid, .steps, .testimonials, .pricing-grid { grid-template-columns: 1fr; }
+    .pain-card, .step { border-right: none; border-bottom: 2px solid var(--ink); }
+    .step { border-bottom: 1px solid #2e3240; }
+    .testimonial { border-bottom: 1.5px solid var(--ink); }
+    .pricing-tier { border-right: none; border-bottom: 2px solid var(--ink); }
+    .magnet-inner { grid-template-columns: 1fr; gap: 2rem; }
+    section { padding: 4rem 1.5rem; }
+    .trust-bar { gap: 1.5rem; padding: 1.2rem 1.5rem; }
+    .mock-stats { grid-template-columns: repeat(3,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Playbook<span>AI</span></div>
+  <a href="#trial" class="nav-cta">Start Free Trial</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-content">
+    <div class="hero-rule"></div>
+    <div class="hero-eyebrow">AI-Powered Operations for Multi-Location Businesses</div>
+    <h1>Your Locations Should Run The Same <em>Without You.</em></h1>
+    <p class="hero-sub">PlaybookAI generates complete, role-specific Standard Operating Procedures in minutes — so your managers finally know what good looks like, whether you're there or not.</p>
+    <div class="hero-cta-group">
+      <a href="#trial" class="btn-primary">Start Free 14-Day Trial</a>
+      <span class="hero-note">No credit card required</span>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="dashboard-mock">
+      <div class="mock-bar">
+        <div class="mock-dot"></div>
+        <div class="mock-dot"></div>
+        <div class="mock-dot"></div>
+        <span class="mock-title">PlaybookAI — Operations Dashboard</span>
+      </div>
+      <div class="mock-body">
+        <div class="mock-generating">
+          <div class="mock-gen-label">⚡ Generating SOP...</div>
+          <div class="mock-gen-text">Opening Shift Checklist — Location Manager Role — Auto Services Industry</div>
+        </div>
+        <div class="mock-sop-list">
+          <div class="mock-sop-item">
+            <div class="mock-sop-left">
+              <div class="mock-sop-icon">📋</div>
+              <div>
+                <div class="mock-sop-name">Opening Shift Checklist</div>
+                <div class="mock-sop-loc">All 4 Locations · Manager</div>
+              </div>
+            </div>
+            <div class="mock-badge badge-new">New</div>
+          </div>
+          <div class="mock-sop-item">
+            <div class="mock-sop-left">
+              <div class="mock-sop-icon">💬</div>
+              <div>
+                <div class="mock-sop-name">Customer Complaint Protocol</div>
+                <div class="mock-sop-loc">All 4 Locations · All Staff</div>
+              </div>
+            </div>
+            <div class="mock-badge badge-done">Active</div>
+          </div>
+          <div class="mock-sop-item">
+            <div class="mock-sop-left">
+              <div class="mock-sop-icon">🔐</div>
+              <div>
+                <div class="mock-sop-name">Cash Handling & Close</div>
+                <div class="mock-sop-loc">3 of 4 Locations · Manager</div>
+              </div>
+            </div>
+            <div class="mock-badge badge-pending">Pending</div>
+          </div>
+          <div class="mock-sop-item">
+            <div class="mock-sop-left">
+              <div class="mock-sop-icon">🚀</div>
+              <div>
+                <div class="mock-sop-name">New Hire Onboarding</div>
+                <div class="mock-sop-loc">All 4 Locations · HR</div>
+              </div>
+            </div>
+            <div class="mock-badge badge-done">Active</div>
+          </div>
+        </div>
+        <div class="mock-stats">
+          <div class="mock-stat">
+            <div class="mock-stat-num">24</div>
+            <div class="mock-stat-label">SOPs Live</div>
+          </div>
+          <div class="mock-stat">
+            <div class="mock-stat-num">4</div>
+            <div class="mock-stat-label">Locations</div>
+          </div>
+          <div class="mock-stat">
+            <div class="mock-stat-num">98%</div>
+            <div class="mock-stat-label">Acknowledged</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust-bar">
+  <div class="trust-item"><span class="trust-icon">⚡</span> SOP Generated in Under 2 Minutes</div>
+  <div class="trust-item"><span class="trust-icon">🔒</span> Role-Based Access Control</div>
+  <div class="trust-item"><span class="trust-icon">📍</span> Multi-Location Assignment</div>
+  <div class="trust-item"><span class="trust-icon">✅</span> Acknowledgment Tracking</div>
+  <div class="trust-item"><span class="trust-icon">🔄</span> Version Control Built In</div>
+</div>
+
+<!-- PAIN -->
+<section class="pain">
+  <div class="container">
+    <div class="section-label">The Real Problem</div>
+    <h2>Your Best Location Runs Well Because <em>You Trained That Manager.</em></h2>
+    <p class="pain-lead">Your other locations? They're guessing. Every inconsistency costs you in customer complaints, staff turnover, and money left on the table — and it keeps happening because nothing is written down.</p>
+    <div class="pain-grid reveal">
+      <div class="pain-card">
+        <div class="pain-num">01</div>
+        <h3>Writing SOPs Takes Forever</h3>
+        <p>Building an operations manual from scratch takes 40+ hours most owners don't have. So it never gets done. And the chaos continues.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-num">02</div>
+        <h3>Nobody Reads The Google Doc</h3>
+        <p>Even when you do write something down, it lives in a folder nobody opens. No accountability, no acknowledgment, no enforcement.</p>
+      </div>
+      <div class="pain-card">
+        <div class="pain-num">03</div>
+        <h3>Institutional Knowledge Walks Out</h3>
+        <p>When a good manager leaves, your process leaves with them. Training the next one takes months and costs you customers while it happens.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how">
+  <div class="container">
+    <div class="section-label">How It Works</div>
+    <h2>From Zero to a Complete<br>Operations Manual in an Afternoon.</h2>
+    <div class="steps reveal">
+      <div class="step">
+        <div class="step-num">1</div>
+        <span class="step-icon">💬</span>
+        <h3>Tell PlaybookAI About the Role</h3>
+        <p>Enter your industry, the position, and the process you want to document. Takes about 60 seconds. No writing required on your end.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <span class="step-icon">⚡</span>
+        <h3>Get a Complete SOP in 2 Minutes</h3>
+        <p>PlaybookAI generates a fully structured, role-specific Standard Operating Procedure — formatted, actionable, and ready to use.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <span class="step-icon">📍</span>
+        <h3>Assign, Track & Update</h3>
+        <p>Push SOPs to specific locations and roles. Track who's acknowledged them. Update anytime and the whole team sees it instantly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL PROOF -->
+<section class="proof">
+  <div class="container">
+    <div class="section-label">What Operators Are Saying</div>
+    <h2>Built for People Running Real Locations.</h2>
+    <div class="testimonials reveal">
+      <div class="testimonial">
+        <p class="testimonial-text">I onboarded a brand new location manager in half the time it normally takes. She had 14 SOPs to reference from day one. First week went smoother than any manager transition we've ever done.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">MR</div>
+          <div>
+            <div class="author-name">Marcus R.</div>
+            <div class="author-title">Owner, 5 Auto Service Locations</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <p class="testimonial-text">I used to spend Sunday nights writing notes for my managers. Now I spend 20 minutes in PlaybookAI and I'm done for the month. Game changer for someone with three locations and zero extra hours.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">JK</div>
+          <div>
+            <div class="author-name">Jamie K.</div>
+            <div class="author-title">Franchisee, 3 Fitness Studios</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial">
+        <p class="testimonial-text">We opened our fourth location last quarter and it was the smoothest opening we've ever had. I handed the manager 22 SOPs on day one. He had zero questions that I had to answer personally.</p>
+        <div class="testimonial-author">
+          <div class="author-avatar">TW</div>
+          <div>
+            <div class="author-name">Tanya W.</div>
+            <div class="author-title">Owner, 4 Quick-Serve Restaurants</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing" id="trial">
+  <div class="container">
+    <div class="section-label">Simple Pricing</div>
+    <h2>No Fluff. Just What You Need.</h2>
+    <p class="pricing-sub">Every plan includes a 14-day free trial. No credit card required to start.</p>
+    <div class="pricing-grid reveal">
+      <div class="pricing-tier">
+        <div class="tier-name">Operator</div>
+        <div class="tier-price"><sup>$</sup>297</div>
+        <div class="tier-period">per month · up to 5 locations</div>
+        <ul class="tier-features">
+          <li><span class="feat-check">✓</span> Unlimited SOP Generation</li>
+          <li><span class="feat-check">✓</span> Role-Based Access</li>
+          <li><span class="feat-check">✓</span> Version Control</li>
+          <li><span class="feat-check">✓</span> Location Assignment</li>
+          <li><span class="feat-x">—</span> Acknowledgment Tracking</li>
+          <li><span class="feat-x">—</span> Custom Branding</li>
+          <li><span class="feat-x">—</span> Onboarding Call</li>
+        </ul>
+        <a href="#" class="tier-cta cta-outline">Start Free Trial</a>
+      </div>
+      <div class="pricing-tier featured">
+        <div class="tier-badge">Most Popular</div>
+        <div class="tier-name">Franchisor</div>
+        <div class="tier-price"><sup>$</sup>597</div>
+        <div class="tier-period">per month · up to 20 locations</div>
+        <ul class="tier-features">
+          <li><span class="feat-check">✓</span> Unlimited SOP Generation</li>
+          <li><span class="feat-check">✓</span> Role-Based Access</li>
+          <li><span class="feat-check">✓</span> Version Control</li>
+          <li><span class="feat-check">✓</span> Location Assignment</li>
+          <li><span class="feat-check">✓</span> Acknowledgment Tracking</li>
+          <li><span class="feat-check">✓</span> Custom Branding</li>
+          <li><span class="feat-check">✓</span> Onboarding Call</li>
+        </ul>
+        <a href="#" class="tier-cta cta-fill">Start Free Trial</a>
+      </div>
+      <div class="pricing-tier">
+        <div class="tier-name">Enterprise</div>
+        <div class="tier-price" style="font-size:2.5rem;">Custom</div>
+        <div class="tier-period">Unlimited locations · White-label</div>
+        <ul class="tier-features">
+          <li><span class="feat-check">✓</span> Everything in Franchisor</li>
+          <li><span class="feat-check">✓</span> White-Label Option</li>
+          <li><span class="feat-check">✓</span> API Access</li>
+          <li><span class="feat-check">✓</span> Dedicated Account Manager</li>
+          <li><span class="feat-check">✓</span> Custom Integrations</li>
+          <li><span class="feat-check">✓</span> Priority Support</li>
+          <li><span class="feat-check">✓</span> SLA Guarantee</li>
+        </ul>
+        <a href="#" class="tier-cta cta-outline">Talk to Sales</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RISK REVERSAL -->
+<section class="risk">
+  <div class="risk-inner reveal">
+    <div class="risk-badge">Zero Risk Guarantee</div>
+    <h2>14 Days Free.<br>No Card. No Catch.</h2>
+    <p>Try PlaybookAI for 14 days at no cost. Build your first 10 SOPs. Assign them to your locations. If it doesn't immediately change how your teams operate — you don't owe us a single dollar.</p>
+    <a href="#trial" class="btn-primary" style="font-size:1.2rem; padding:1.1rem 3rem;">Start Building Free</a>
+  </div>
+</section>
+
+<!-- LEAD MAGNET -->
+<div class="magnet">
+  <div class="magnet-inner">
+    <div>
+      <div class="section-label" style="color: rgba(15,14,12,0.5);">Free Download</div>
+      <h2>The 10 SOPs Every Multi-Location Business Needs (But Never Has)</h2>
+      <p>Download our free guide and see exactly which processes are costing you money every week because they're not documented.</p>
+    </div>
+    <div class="magnet-form">
+      <input type="text" placeholder="First Name">
+      <input type="email" placeholder="Work Email">
+      <input type="text" placeholder="Number of Locations">
+      <button type="submit">Send Me the Free Guide →</button>
+      <p class="magnet-disclaimer">No spam, ever. Unsubscribe anytime. We take your inbox seriously.</p>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Playbook<span>AI</span></div>
+  <p>© 2025 PlaybookAI. Built for operators who run real businesses.</p>
+  <p>Privacy Policy · Terms of Service</p>
+</footer>
+
+<script>
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        setTimeout(() => entry.target.classList.add('visible'), i * 100);
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // Smooth scroll CTAs
+  document.querySelectorAll('a[href="#trial"]').forEach(a => {
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.querySelector('#trial').scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+</body>
+</html>
